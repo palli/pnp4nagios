@@ -14,11 +14,13 @@ class System_Controller extends Template_Controller {
         
         $this->data       = new Data_Model();
         $this->config     = new Config_Model();
-        $this->rrdtool    = new Rrdtool_Model();
         $this->auth       = new Auth_Model();
 	#$this->system	  = new System_Model();
 
         $this->config->read_config();
+	$backend = ucfirst($this->config->conf['backend'])."_Model"; 
+        $this->backend    = new $backend();
+
         Kohana::config_set('locale.language',$this->config->conf['lang']);
         // Check for mod_rewrite
         $this->check_mod_rewrite();

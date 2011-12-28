@@ -40,7 +40,7 @@ class Xport_Controller extends System_Controller  {
                 print "</NAGIOS>\n";
                 exit;
             }
-            $data    = $this->rrdtool->doXport($this->data->XPORT);
+            $data    = $this->backend->doXport($this->data->XPORT);
             header('Content-Type: application/xml');
             print $data; 
         }else{
@@ -58,7 +58,7 @@ class Xport_Controller extends System_Controller  {
                 print json_encode("not authorized");                
                 exit;
             }
-            $data    = $this->rrdtool->doXport($this->data->XPORT);
+            $data    = $this->backend->doXport($this->data->XPORT);
             $json    = json_encode(simplexml_load_string($data));
             header('Content-type: application/json');
             print $json; 
@@ -77,7 +77,7 @@ class Xport_Controller extends System_Controller  {
                 print "not authorized";                
                 exit;
             }
-            $data = $this->rrdtool->doXport($this->data->XPORT);
+            $data = $this->backend->doXport($this->data->XPORT);
             $csv = $this->data->xml2csv($data);
             header("Content-Type: text/plain; charset=UTF-8");
             print $csv;

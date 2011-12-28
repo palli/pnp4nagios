@@ -31,6 +31,7 @@ class Config_Model extends System_Model
         $conf['pdf_margin_left']    = Kohana::config('core.pdf_margin_left');
         $conf['pdf_margin_right']   = Kohana::config('core.pdf_margin_right');
         $conf['pdf_margin_top']     = Kohana::config('core.pdf_margin_top');
+        $conf['backend']            = Kohana::config('core.backend');
         $views = Kohana::config('core.views');
         
         if (is_readable($config . ".php")) {

@@ -112,6 +112,10 @@ $config['pnp_etc_path'] = PNP_ETC_PATH;
  * Default Theme
  */
 $config['theme'] = 'smoothness';
+/**
+ * Default Graphing Backend 
+ */
+$config['backend'] = 'rrdtool';
 /*
  * Available Doc Languages
  */
