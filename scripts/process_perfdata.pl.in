@@ -29,6 +29,7 @@ use strict;
 use POSIX;
 use Getopt::Long;
 use Time::HiRes qw(gettimeofday tv_interval);
+use IO::Socket;
 use vars qw ( $TEMPLATE %NAGIOS $t0 $t1 $rt $delayed_write $rrdfile @ds_create $count $line $name $ds_update $dstype);
 
 my %conf = (
@@ -55,6 +56,12 @@ my %conf = (
     KEY                => 'should_be_changed',
     KEY_FILE           => '@sysconfdir@/secret.key',
     UOM2TYPE           => { 'c' => 'DERIVE', 'd' => 'DERIVE' },
+    RRD_ENABLED        => 1,
+    GRAPHITE_ENABLED   => 1,
+    GRAPHITE_HOST      => "graphite" ,
+    GRAPHITE_PORT      => "2003" ,
+    GRAPHITE_PROTO     => "tcp" ,
+    GRAPHITE_TIMEOUT   => 1 ,
 );
 
 my %const = (
@@ -365,6 +372,7 @@ sub process_perfdata_file {
 # Write Data to RRD Files
 #
 sub data2rrd {
+    return unless $conf{'RRD_ENABLED'};
 
     my @data      = @_;
     my @rrd_state = ();
@@ -584,6 +592,80 @@ sub write_rrd {
     return @rrd_state;
 }
 
+sub data2graphite {
+    return unless $conf{'GRAPHITE_ENABLED'};
+    my @data      = @_;
+
+    print_log( "data2graphite", 1 );
+    $NAGIOS{XMLFILE}          = $conf{RRDPATH} . "/" . $data[0]{hostname} . "/" . $data[0]{servicedesc} . ".xml";
+    $NAGIOS{SERVICEDESC}      = $data[0]{servicedesc};
+    $NAGIOS{DISP_SERVICEDESC} = $data[0]{disp_servicedesc};
+    $NAGIOS{AUTH_SERVICEDESC} = $data[0]{auth_servicedesc} || "";
+    $NAGIOS{AUTH_HOSTNAME}    = $data[0]{auth_hostname} || "";
+    $NAGIOS{MULTI_PARENT}     = "";
+    $NAGIOS{MULTI_PARENT}     = $data[0]{multi_parent} || "";
+    $TEMPLATE                 = $data[0]{template};
+
+    my $socket = IO::Socket::INET->new(
+        PeerAddr => $conf{'GRAPHITE_HOST'},
+        proto    => $conf{'GRAPHITE_PROTO'},
+        PeerPort => $conf{'GRAPHITE_PORT'},
+        Type     => SOCK_STREAM,
+    );
+
+    #
+    # Create PHP Template File
+    #
+    open_template( $NAGIOS{XMLFILE} );
+
+    for my $i ( 0 .. $#data ) {
+        print_log( " -- Job $i ", 3 );
+        my $DS = $i + 1;
+
+        #
+        # for each datasource
+        #
+        for my $job ( sort keys %{ $data[$i] } ) {
+            if ( defined $data[$i]{$job} ) {
+                print_log( "  -- $job -> $data[$i]{$job}", 3 );
+            }
+        }
+	
+        write_to_template( "TEMPLATE",         $data[0]{template} );
+        write_to_template( "RRDFILE",          $rrdfile );
+        write_to_template( "RRD_STORAGE_TYPE", $data[$i]{rrd_storage_type} );
+        write_to_template( "RRD_HEARTBEAT",    $data[$i]{rrd_heartbeat} );
+        write_to_template( "IS_MULTI",         $data[0]{multi} );
+        write_to_template( "DS",               $DS );
+        write_to_template( "NAME",             $data[$i]{name} );
+        write_to_template( "LABEL",            $data[$i]{label} );
+        write_to_template( "UNIT",             $data[$i]{uom} );
+        write_to_template( "ACT",              $data[$i]{value} );
+        write_to_template( "WARN",             $data[$i]{warning} );
+        write_to_template( "WARN_MIN",         $data[$i]{warning_min} );
+        write_to_template( "WARN_MAX",         $data[$i]{warning_max} );
+        write_to_template( "WARN_RANGE_TYPE",  $data[$i]{warning_range_type} );
+        write_to_template( "CRIT",             $data[$i]{critical} );
+        write_to_template( "CRIT_MIN",         $data[$i]{critical_min} );
+        write_to_template( "CRIT_MAX",         $data[$i]{critical_max} );
+        write_to_template( "CRIT_RANGE_TYPE",  $data[$i]{critical_range_type} );
+        write_to_template( "MIN",              $data[$i]{min} );
+        write_to_template( "MAX",              $data[$i]{max} );
+
+	$data[0]{hostname} =~ s/\./_/g; # Graphite compatible instance name
+	$data[0]{servicedesc} =~ s/\./_/g;
+	$data[0]{name} =~ s/\./_/g;
+	my $graphite_instance = sprintf("pnp4nagios.%s.%s.%s", $data[0]{hostname}, $data[0]{servicedesc}, $data[$i]{name});
+	my $line = sprintf("%s %s %d\n", $graphite_instance, $data[$i]{value}, $data[$i]{timet}); 
+	print_log($line,1);
+	print $socket $line;
+    }
+
+    write_state_to_template(0,"graphite updated");
+    write_env_to_template();
+    close_template( $NAGIOS{XMLFILE} );
+    close($socket);
+}
 #
 # Write Template
 #
@@ -1022,6 +1104,7 @@ sub parse_perfstring {
                     $p{disp_servicedesc} = cleanup( $multi[0] );    # Use the multi servicedesc.
                     $p{auth_servicedesc} = $auth_servicedesc;
                     data2rrd(@perfs) if ( $#perfs >= 0 );           # Process when a new block starts.
+                    data2graphite(@perfs) if ( $#perfs >= 0 );           # Process when a new block starts.
                     @perfs = ();                                    # Clear the perfs array.
                     # reset check_multi block count
                     $check_multi_blockcount = 0;
@@ -1095,6 +1178,7 @@ sub parse_perfstring {
             }
         }
         data2rrd(@perfs) if ( $#perfs >= 0 );
+        data2graphite(@perfs) if ( $#perfs >= 0 );
         @perfs = ();
     } else {
 
@@ -1142,6 +1226,7 @@ sub parse_perfstring {
             $count++;
         }
         data2rrd(@perfs) if ( $#perfs >= 0 );
+        data2graphite(@perfs) if ( $#perfs >= 0 );
         @perfs = ();
     }
 }
