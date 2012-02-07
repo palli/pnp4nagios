@@ -25,7 +25,7 @@ class Graph_Controller extends System_Controller  {
     public function index()
     {
         $this->template->graph->graph_content = $this->add_view('graph_content');
-        $this->template->graph->graph_content->graph_width = ($this->config->conf['graph_width'] + 85);
+        $this->template->graph->graph_content->graph_width = ($this->config->conf['graph_width'] );
         $this->template->graph->graph_content->timerange_select = $this->add_view('timerange_select');
         $this->template->graph->header        = $this->add_view('header');
         $this->template->graph->search_box    = $this->add_view('search_box');
@@ -56,7 +56,7 @@ class Graph_Controller extends System_Controller  {
             $this->is_authorized = $this->auth->is_authorized($this->data->MACRO['AUTH_HOSTNAME'], $this->data->MACRO['AUTH_SERVICEDESC']); 
 
             $this->title = Kohana::lang('common.service-details') . " ". $this->host ." -> " . $this->data->MACRO['DISP_SERVICEDESC'];
-            $this->template->graph->graph_content->graph_width = ($this->data->STRUCT[0]['GRAPH_WIDTH'] + 85);
+            $this->template->graph->graph_content->graph_width = ($this->data->STRUCT[0]['GRAPH_WIDTH']);
             // Status Box Vars
             $this->template->graph->status_box->host     = $this->data->MACRO['DISP_HOSTNAME'];
             $this->template->graph->status_box->lhost    = $this->data->MACRO['HOSTNAME'];

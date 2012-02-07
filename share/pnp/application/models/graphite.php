@@ -37,21 +37,11 @@ class Graphite_Model extends System_Model
                 $command .= $conf['graph_opt'];
             }
             if(is_numeric($conf['graph_width'])){
-                $width = abs($conf['graph_width'])+180;
+                $width = abs($conf['graph_width']);
             }
             if(is_numeric($conf['graph_height'])){
-                $height = abs($conf['graph_height'])+100;
+                $height = abs($conf['graph_height']);
             }
-        }
-
-        if ($width > 0){
-            $command .= " --width=$width";
-        }
-        if ($height > 0){
-            $command .= " --height=$height";
-        }
-        if ($height < 81 ){
-            $command .= " --only-graph ";
         }
 
 	$url = sprintf("http://graphite/render?width=%s&height=%s&%s", $width, $height, $RRD_CMD);
