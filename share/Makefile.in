@@ -158,7 +158,7 @@ install:
 
 	$(INSTALL) -m 755 $(INSTALL_OPTS) -d $(DESTDIR)$(DATAROOTDIR)/templates.dist
 
-	for file in pnp/templates.dist/*.php; \
+	for file in pnp/templates.dist/*; \
 		do $(INSTALL) -m 644 $(INSTALL_OPTS) $$file $(DESTDIR)$(DATAROOTDIR)/templates.dist; done
 
 	$(INSTALL) -m 755 $(INSTALL_OPTS) -d $(DESTDIR)$(DATAROOTDIR)/templates.special

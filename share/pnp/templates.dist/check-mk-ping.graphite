@@ -1,0 +1,30 @@
+<?php
+#
+# Copyright (c) 2006-2012 Joerg Linge (http://www.pnp4nagios.org)
+#
+$opt[0]  = "&title=".urlencode($this->MACRO['DISP_SERVICEDESC']);
+$opt[0] .= "&fontName=FreeMono";
+$opt[0] .= "&height=250";
+$opt[0] .= "&template=plain";
+$opt[0] .= "&lineMode=connected";
+$def[0] = "";
+$ds_name[0] = "Ping Response Times";
+foreach($this->DS as $KEY => $VAL){
+	if($VAL['LABEL'] == "pl")
+		continue;
+
+	$def[0] .= "&target=cactiStyle(pnp4nagios.".
+		    $this->MACRO['DISP_HOSTNAME']. "." .
+		    $this->MACRO['SERVICEDESC'].".".
+		    $VAL['LABEL'].")";
+}
+
+$opt[1]  = "&title=".urlencode($this->MACRO['DISP_SERVICEDESC']);
+$opt[1] .= "&fontName=FreeMono";
+$opt[1] .= "&height=150";
+$opt[1] .= "&template=plain";
+$opt[1] .= "&lineMode=connected";
+$def[1] = "";
+$ds_name[1] = "Packets Lost";
+$def[1] .= "&target=cactiStyle(pnp4nagios.". $this->MACRO['DISP_HOSTNAME']. "." . $this->MACRO['SERVICEDESC']. ".pl)";
+?>

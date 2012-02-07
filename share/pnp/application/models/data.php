@@ -348,7 +348,11 @@ class Data_Model extends System_Model
                 $tmp_struct['VIEW']          = $view;
                 $tmp_struct['TEMPLATE_FILE'] = $this->TEMPLATE_FILE;;
                 $tmp_struct['SOURCE']        = $key;
-                $tmp_struct['RRD_CALL']      = $this->TIMERANGE['cmd'] . " ". $this->RRD['opt'][$key] . " " . $this->RRD['def'][$key];
+                if($this->config->conf['backend'] == "graphite"){
+                    $tmp_struct['RRD_CALL']  = $this->TIMERANGE['cmd'] . "&" . $this->RRD['opt'][$key] . "&" . $this->RRD['def'][$key];
+                }else{
+                    $tmp_struct['RRD_CALL']  = $this->TIMERANGE['cmd'] . " ". $this->RRD['opt'][$key] . " " . $this->RRD['def'][$key];
+                }
                 $tmp_struct['TIMERANGE']     = $this->TIMERANGE;
                 $tmp_struct['GRAPH_WIDTH']   = $this->getGraphDimensions('width',  $tmp_struct['RRD_CALL']);
                 $tmp_struct['GRAPH_HEIGHT']  = $this->getGraphDimensions('height', $tmp_struct['RRD_CALL']);
@@ -383,7 +387,11 @@ class Data_Model extends System_Model
                     $tmp_struct['VIEW']          = $view_key;
                     $tmp_struct['TEMPLATE_FILE'] = $this->TEMPLATE_FILE;;
                     $tmp_struct['SOURCE']        = $key;
-                    $tmp_struct['RRD_CALL']      = $this->TIMERANGE[$v]['cmd'] . " " . $this->RRD['opt'][$key] . " " . $this->RRD['def'][$key];
+                    if($this->config->conf['backend'] == "graphite"){
+                        $tmp_struct['RRD_CALL']  = $this->TIMERANGE[$v]['cmd'] . "&" . $this->RRD['opt'][$key] . "&" . $this->RRD['def'][$key];
+                    }else{
+                        $tmp_struct['RRD_CALL']  = $this->TIMERANGE[$v]['cmd'] . " " . $this->RRD['opt'][$key] . " " . $this->RRD['def'][$key];
+                    }
                     $tmp_struct['GRAPH_WIDTH']   = $this->getGraphDimensions('width',  $tmp_struct['RRD_CALL']);
                     $tmp_struct['GRAPH_HEIGHT']  = $this->getGraphDimensions('height', $tmp_struct['RRD_CALL']);
                     if(isset($this->RRD['ds_name'][$key]) ){
@@ -417,7 +425,11 @@ class Data_Model extends System_Model
                 $tmp_struct['VIEW']          = $view;
                 $tmp_struct['TEMPLATE_FILE'] = $this->TEMPLATE_FILE;;
                 $tmp_struct['SOURCE']        = $key;
-                $tmp_struct['RRD_CALL']      = $this->TIMERANGE[$view]['cmd'] . " ". $this->RRD['opt'][$key] . " " . $this->RRD['def'][$key];
+                if($this->config->conf['backend'] == "graphite"){
+                    $tmp_struct['RRD_CALL']      = $this->TIMERANGE[$view]['cmd'] . "&". $this->RRD['opt'][$key] . "&" . $this->RRD['def'][$key];
+                }else{
+                    $tmp_struct['RRD_CALL']      = $this->TIMERANGE[$view]['cmd'] . " ". $this->RRD['opt'][$key] . " " . $this->RRD['def'][$key];
+                }
                 $tmp_struct['TIMERANGE']     = $this->TIMERANGE[$view];
                 $tmp_struct['GRAPH_WIDTH']   = $this->getGraphDimensions('width',  $tmp_struct['RRD_CALL']);
                 $tmp_struct['GRAPH_HEIGHT']  = $this->getGraphDimensions('height', $tmp_struct['RRD_CALL']);
@@ -626,6 +638,13 @@ class Data_Model extends System_Model
         $r_template_file = "";
         $r_template = "";
         $recursive = explode("_", $template);
+
+	if($this->config->conf['backend'] == "graphite"){
+            $ext=".graphite";
+        }else{
+            $ext=".php";
+        }
+		
         if($this->config->conf['enable_recursive_template_search'] == 1){
             $i = 0;
             foreach ($recursive as $value) {
@@ -634,7 +653,7 @@ class Data_Model extends System_Model
                 } else {
                     $r_template = $r_template . '_' . $value;
                 }
-                $file = $dir . '/' . $r_template . '.php';
+                $file = $dir . '/' . $r_template . $ext;
                 if (is_readable($file)) {
                     $r_template_file = $file;
                 }
@@ -646,7 +665,7 @@ class Data_Model extends System_Model
                 return FALSE;
             }
         }else{
-            $file = $dir . '/' . $template . '.php';
+            $file = $dir . '/' . $template . $ext;
             if (is_readable($file)) {
                 return $file;
             }else{
@@ -686,7 +705,11 @@ class Data_Model extends System_Model
             $timerange['f_start'] = date($this->config->conf['date_fmt'],$start);
             $timerange['end']     = $end;
             $timerange['f_end']   = date($this->config->conf['date_fmt'],$end);
-            $timerange['cmd']     = " --start $start --end $end ";
+            if($this->config->conf['backend'] == "graphite"){
+                $timerange['cmd']     = "&from=$start&until=$end";
+            }else{
+                $timerange['cmd']     = " --start $start --end $end ";
+            }
             $timerange['type']    = "start-end";
             $this->TIMERANGE = $timerange;
             return;
@@ -733,7 +756,11 @@ class Data_Model extends System_Model
            $timerange['f_start'] = date($this->config->conf['date_fmt'],$start);
            $timerange['end']     = $end;
            $timerange['f_end']   = date($this->config->conf['date_fmt'],$end);
-           $timerange['cmd']     = " --start $start --end $end ";
+           if($this->config->conf['backend'] == "graphite"){
+               $timerange['cmd']     = "from=$start&until=$end";
+           }else{
+               $timerange['cmd']     = " --start $start --end $end ";
+           }
            $timerange['type']    = "views";
            for ($i = 0; $i < sizeof($this->config->views); $i++) {
                $timerange[$i]['title']   = $this->config->views[$i]['title'];
@@ -741,7 +768,11 @@ class Data_Model extends System_Model
                $timerange[$i]['f_start'] = date($this->config->conf['date_fmt'],$end - $this->config->views[$i]['start']);
                $timerange[$i]['end']     = $end;
                $timerange[$i]['f_end']   = date($this->config->conf['date_fmt'],$end);
-               $timerange[$i]['cmd']     = " --start " . ($end - $this->config->views[$i]['start']) . " --end  $end" ;
+               if($this->config->conf['backend'] == "graphite"){
+                   $timerange[$i]['cmd']     = "from=" . ($end - $this->config->views[$i]['start']) . "&until=$end" ;
+               }else{
+                   $timerange[$i]['cmd']     = " --start " . ($end - $this->config->views[$i]['start']) . " --end  $end" ;
+               }
            }
            $this->TIMERANGE = $timerange;
     }

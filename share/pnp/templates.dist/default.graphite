@@ -1,0 +1,9 @@
+<?php
+#
+# Copyright (c) 2006-2012 Joerg Linge (http://www.pnp4nagios.org)
+#
+foreach ($this->DS as $KEY=>$VAL) {
+	$opt[$KEY] = "&title=".$this->MACRO['SERVICEDESC']."&template=plain&lineMode=connected";
+	$def[$KEY] = "&target=cactiStyle(pnp4nagios.".$this->MACRO['DISP_HOSTNAME']. "." .$this->MACRO['SERVICEDESC'].".".$VAL['NAME'].")";
+}
+?>
