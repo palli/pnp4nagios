@@ -57,7 +57,7 @@ my %conf = (
     KEY_FILE           => '@sysconfdir@/secret.key',
     UOM2TYPE           => { 'c' => 'DERIVE', 'd' => 'DERIVE' },
     RRD_ENABLED        => 1,
-    GRAPHITE_ENABLED   => 1,
+    GRAPHITE_ENABLED   => 0,
     GRAPHITE_HOST      => "graphite" ,
     GRAPHITE_PORT      => "2003" ,
     GRAPHITE_PROTO     => "tcp" ,

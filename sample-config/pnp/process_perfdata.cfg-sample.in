@@ -9,8 +9,13 @@
 TIMEOUT = 15 
 
 #
-# Use RRDs Perl module
+# RRD Backend enabled?
+# Default: 1
+RRD_ENABLED = 1
+
 #
+# Use RRDs Perl module
+# Default: 1
 USE_RRDs = 1 
 
 #
@@ -89,6 +94,34 @@ RRD_DAEMON_OPTS =
 # Spool Directory used for internal statistic 
 #
 STATS_DIR = @localstatedir@/stats
+#########################################################
+#
+# Graphite Backend Config
+#
+#
+# Graphite Backend enabled
+# Default: 0
+GRAPHITE_ENABLED = 0
+
+#
+# Graphite Host
+# Default: graphite
+GRAPHITE_HOST = "graphite"
+
+#
+# Graphite Port
+# Default: 2003
+GRAPHITE_PORT = "2003"
+
+#
+# Graphite Protocol
+# Default: tcp
+GRAPHITE_PROTO = "tcp"
+
+#
+# Graphite Timeout
+# Default: 1
+GRAPHITE_TIMEOUT = "1"
 
 #########################################################
 # Gearman Worker Config
