@@ -212,6 +212,33 @@ class rrd_Core {
         return $line; 
     }
 
+	/*
+	* Function to modify alignment of gprint
+	*/
+	public static function gprinta($vname=FALSE, $cf="AVERAGE", $text="%6.2lf %s", $align=""){
+        $line = "";
+        if($vname === FALSE){
+            throw new Kohana_exception("rrd::". __FUNCTION__ . "() First Parameter 'vname' is missing");
+        }
+        if($align != ""){
+            $align = '\\' . $align;
+        }
+        if(is_array($cf)){
+            foreach($cf as $key => $val){
+                $line .= sprintf("GPRINT:%s:%s:",$vname,$val);
+                if(($key == sizeof($cf)-1)and($align != "")){
+                    $line .= '"'.$text.' '.ucfirst(strtolower($val)).$align.'" ';
+                }else{
+                    $line .= '"'.$text.' '.ucfirst(strtolower($val)).'" ';
+                }
+            }
+        }else{
+            $line .= sprintf("GPRINT:%s:%s:",$vname,$cf);
+            $line .= '"'.$text.'" ';
+        }
+        return $line;
+    }
+
     public static function def($vname=FALSE, $rrdfile=FALSE, $ds=FALSE, $cf="AVERAGE"){
         $line = "";
         if($vname === FALSE){
@@ -340,8 +367,8 @@ class rrd_Core {
         $line = "";
         $line .= "CDEF:".$green_vname."=".$vname.",".$warning.",LT,".$vname.",UNKN,IF ";
         $line .= "CDEF:".$btw_vname."=".$vname.",".$critical.",LT,".$vname.",UNKN,IF ";
-        $line .= "CDEF:".$blue_vname."=".$btw_vname.",".$warning.",GT,".$btw_vname.",UNKN,IF ";
-        $line .= "CDEF:".$red_vname."=".$vname.",".$critical.",GT,".$vname.",UNKN,IF ";
+        $line .= "CDEF:".$blue_vname."=".$btw_vname.",".$warning.",GE,".$btw_vname.",UNKN,IF ";
+        $line .= "CDEF:".$red_vname."=".$vname.",".$critical.",GE,".$vname.",UNKN,IF ";
         $line .= rrd::gradient($green_vname, $start_color, $color_green.$opacity);
         $line .= rrd::gradient($blue_vname, $start_color, $color_btw.$opacity);
         $line .= rrd::gradient($red_vname, $start_color, $color_red.$opacity);
