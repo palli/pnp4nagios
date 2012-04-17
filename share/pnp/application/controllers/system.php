@@ -150,7 +150,7 @@ class System_Controller extends Template_Controller {
                 elseif (in_array('NONE', $users)) {
                         return 0;
                 }
-                elseif (in_array($_SERVER["REMOTE_USER"], $users)) {
+                elseif (in_array($this->auth->REMOTE_USER, $users)) {
                         return 1;
                 } else {
                         return 0;
@@ -164,7 +164,7 @@ class System_Controller extends Template_Controller {
                 elseif (in_array('NONE', $users)) {
                         return 0;
                 }
-                elseif (in_array($_SERVER["REMOTE_USER"], $users)) {
+                elseif (in_array($this->auth->REMOTE_USER, $users)) {
                         return 1;
                 } else {
                         return 0;
@@ -178,7 +178,7 @@ class System_Controller extends Template_Controller {
                 elseif (in_array('NONE', $users)) {
                         return 0;
                 }
-                elseif (in_array($_SERVER["REMOTE_USER"], $users)) {
+                elseif (in_array($this->auth->REMOTE_USER, $users)) {
                         return 1;
                 } else {
                         return 0;
@@ -192,7 +192,7 @@ class System_Controller extends Template_Controller {
                 elseif (in_array('NONE', $users)) {
                         return 0;
                 }
-                elseif (in_array($_SERVER["REMOTE_USER"], $users)) {
+                elseif (in_array($this->auth->REMOTE_USER, $users)) {
                         return 1;
                 } else {
                         return 0;
