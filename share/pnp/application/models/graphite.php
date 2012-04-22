@@ -44,14 +44,19 @@ class Graphite_Model extends System_Model
             }
         }
 
-	$url = sprintf("http://graphite/render?width=%s&height=%s&%s", $width, $height, $RRD_CMD);
-	$fh = fopen($url, "r");
-	$data = stream_get_contents($fh);
-	fclose($fh);
-        if($data){
+	$url = sprintf("%s?width=%s&height=%s&%s", $conf['graphite-web'], $width, $height, $RRD_CMD);
+	$ch = curl_init();
+	curl_setopt( $ch, CURLOPT_URL, $url );
+	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, True );
+	curl_setopt( $ch, CURLOPT_USERAGENT, "pnp4nagios" );
+	$data = curl_exec($ch);
+	$info = curl_getinfo($ch);
+        if($info['http_code'] == 200){
             return $data;
         }else{
-            return FALSE;
+            $data =  "ERROR: Grahite retuns HTTP State ". $info['http_code']."\n";
+            $data .= "URL: ". $info['url'];
+            return $data;
         }
     }
 
@@ -64,6 +69,63 @@ class Graphite_Model extends System_Model
                 bW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAADUlEQVQI12NgYGBgAAAABQABXvMqOgAAAABJ
                 RU5ErkJggg==');
             return;       
+	}
+
+	if (preg_match('/^ERROR/', $data)) {
+            if(preg_match('/NOT_AUTHORIZED/', $data)){
+                // TODO: i18n
+                $data .= "\n\nYou are not authorized to view this Image";
+                // Set font size
+                $font_size = 3;
+            }else{
+                // Set font size
+		$data = $this->format_graphite_debug($data);
+                $font_size = 1.5;
+            }
+            $ts=explode("\n",$data);
+            $width=0;
+            foreach ($ts as $k=>$string) {
+                $width=max($width,strlen($string));
+            }
+
+            $width  = imagefontwidth($font_size)*$width;
+            if($width <= $this->config->conf['graph_width']){
+                $width = $this->config->conf['graph_width'];
+            }
+            $height = imagefontheight($font_size)*count($ts);
+            if($height <= $this->config->conf['graph_height']){
+                $height = $this->config->conf['graph_height'];
+            }
+            $el=imagefontheight($font_size);
+            $em=imagefontwidth($font_size);
+            // Create the image pallette
+            $img = imagecreatetruecolor($width,$height);
+            // Dark red background
+            $bg = imagecolorallocate($img, 0xAA, 0x00, 0x00);
+            imagefilledrectangle($img, 0, 0,$width ,$height , $bg);
+            // White font color
+            $color = imagecolorallocate($img, 255, 255, 255);
+
+            foreach ($ts as $k=>$string) {
+                // Length of the string
+                $len = strlen($string);
+                // Y-coordinate of character, X changes, Y is static
+                $ypos_offset = 5;
+                $xpos_offset = 5;
+                // Loop through the string
+                for($i=0;$i<$len;$i++){
+                      // Position of the character horizontally
+                      $xpos = $i * $em + $ypos_offset;
+                      $ypos = $k * $el + $xpos_offset;
+                      // Draw character
+                      imagechar($img, $font_size, $xpos, $ypos, $string, $color);
+                      // Remove character from string
+                      $string = substr($string, 1);
+                }
+            }
+            header("Content-type: image/png");
+            imagepng($img);
+            imagedestroy($img);
         }else{
             header("Content-type: image/png");       
             echo $data;
@@ -84,5 +146,10 @@ class Graphite_Model extends System_Model
                 list ($img['width'], $img['height'], $img['type'], $img['attr']) = getimagesize($img['file']);
         }
         return $img;
+    }
+
+    private function format_graphite_debug($data) {
+        $data = preg_replace('/(&)/',"\n", $data);
+        return $data;
     }
 }

@@ -25,10 +25,24 @@
 # Set this value to '0' if URL rewriting is not available on your system.
 #
 $conf['use_url_rewriting'] = 1;
+
+#
+# Grahing Backend to use.
+# Possible values: rrdtoot|graphite
+# default = rrdtool
+# 
+$conf['backend'] = "rrdtool";
+
 #
 # Location of rrdtool binary
 #
 $conf['rrdtool'] = "@RRDTOOL@";
+
+#
+# URL to graphite-webapp
+#
+$conf['graphite-web'] = "http://graphite/render";
+
 #
 # RRDTool image size of graphs
 #
