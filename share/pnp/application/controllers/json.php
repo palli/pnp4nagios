@@ -34,6 +34,7 @@ class Json_Controller extends System_Controller  {
                 $json[$i]['start']       = $struct['TIMERANGE']['start'];
                 $json[$i]['end']         = $struct['TIMERANGE']['end'];
                 $json[$i]['title']       = $struct['TIMERANGE']['title'];
+                $json[$i]['template']    = $struct['TEMPLATE_FILE'];
                 $i++;
             }
             print json_encode($json);
